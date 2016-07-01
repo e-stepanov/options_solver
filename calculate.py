@@ -6,6 +6,8 @@ Example command for calculating europian option:
 python calculate.py -t europian -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
 
 Example command for calculating asian option:
+python calculate.py -t asian -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
+-amax 200.0
 
 """
 import time
@@ -16,9 +18,9 @@ from market import (
     EuropianOption,
     AsianOption
 )
-from explicit_fdms.core import Nodes
-from explicit_fdms.europian_option_fdm import EuropianOptionExplicitFDM
-from explicit_fdms.asian_option_fdm import AsianOptionExplicitFDM
+from fdms.core import Nodes
+from fdms.explicit_fdms import EuropianOptionExplicitFDM
+from fdms.explicit_fdms import AsianOptionExplicitFDM
 
 parser = argparse.ArgumentParser(description="Calculates options prices")
 parser.add_argument(

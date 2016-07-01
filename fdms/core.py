@@ -3,7 +3,7 @@
 import numpy as np
 
 
-class ExplicitFDMBase(object):
+class FDMBase(object):
     """
     Base class for explicit schemes realizations for different options pricing
     """

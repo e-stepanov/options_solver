@@ -4,10 +4,10 @@ import time
 
 import numpy as np
 
-from .core import ExplicitFDMBase
+from ..core import FDMBase
 
 
-class AsianOptionExplicitFDM(ExplicitFDMBase):
+class AsianOptionExplicitFDM(FDMBase):
     """
     Explicit Euler scheme realization for Black-Scholes PDE
     for vanilla europian option

@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
-from .core import ExplicitFDMBase
+from ..core import FDMBase
 
 
-class EuropianOptionExplicitFDM(ExplicitFDMBase):
+class EuropianOptionExplicitFDM(FDMBase):
     """
     Explicit Euler scheme realization for Black-Scholes PDE
     for vanilla europian option
