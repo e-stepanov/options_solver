@@ -3,10 +3,10 @@
 Calculate options' prices.
 
 Example command for calculating europian option:
-python calculate.py -t europian -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
+python calculate.py -t europian -tm implicit -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
 
 Example command for calculating asian option:
-python calculate.py -t asian -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
+python calculate.py -t asian -tm explicit -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
 -amax 200.0
 
 """
@@ -19,13 +19,20 @@ from market import (
     AsianOption
 )
 from fdms.core import Nodes
-from fdms.explicit_fdms import EuropianOptionExplicitFDM
-from fdms.explicit_fdms import AsianOptionExplicitFDM
+from fdms.explicit_fdms import (
+    EuropianOptionExplicitFDM,
+    AsianOptionExplicitFDM
+)
+from fdms.implicit_fdms import EuropianOptionImplicitFDM
 
 parser = argparse.ArgumentParser(description="Calculates options prices")
 parser.add_argument(
     '--type', '-t', choices=['europian', 'asian'],
     required=True, help="Option type"
+)
+parser.add_argument(
+    '--fdm_type', '-mt', choices=['explicit', 'implicit'],
+    required=True, help="Finite difference method type"
 )
 parser.add_argument(
     '--strike', '-s',
@@ -75,6 +82,10 @@ if __name__ == "__main__":
     )
 
     if args.type == 'europian':
+        if args.fdm_type == 'explicit':
+            fdm_class = EuropianOptionExplicitFDM
+        elif args.fdm_type == 'implicit':
+            fdm_class = EuropianOptionImplicitFDM
         start_time = time.time()
         option = EuropianOption(
             strike=args.strike, maturity=args.maturity
@@ -85,7 +96,7 @@ if __name__ == "__main__":
              100, 'asset_price')
         ])
 
-        fdm = EuropianOptionExplicitFDM(
+        fdm = fdm_class(
             option, market_data, nodes
         )
 
@@ -115,4 +126,6 @@ if __name__ == "__main__":
         print "Executing time %f" % (end_time - start_time)
         print prices[-1]
     else:
-        raise ValueError("Only europian options are supported at this moment")
+        raise ValueError(
+            "Only europian and asian options are supported at this moment"
+        )
