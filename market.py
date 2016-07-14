@@ -29,16 +29,16 @@ class EuropianOption(Option):
 
     def calculate_price(self, asset_price, market_data):
         d1 = (
-            (math.log(asset_price / self.strike) +
+            (np.log(asset_price / self.strike) +
                 (market_data.interest +
                     market_data.volatility**2 / 2.0) *
                 self.maturity) /
-            (market_data.volatility * math.sqrt(self.maturity))
+            (market_data.volatility * np.sqrt(self.maturity))
         )
-        d2 = d1 - market_data.volatility * math.sqrt(self.maturity)
+        d2 = d1 - market_data.volatility * np.sqrt(self.maturity)
         option_price = (
             asset_price * (self._cdf(d1)) - self.strike *
-            math.exp(-market_data.interest * self.maturity) *
+            np.exp(-market_data.interest * self.maturity) *
             self._cdf(d2)
         )
         return option_price
@@ -47,7 +47,13 @@ class EuropianOption(Option):
         """
         Calculate cumulative distribution function in a certain point
         """
-        return 1.0 / 2.0 * (1 + math.erf(x / math.sqrt(2)))
+        if isinstance(x, float):
+            return 1.0 / 2.0 * (1 + math.erf(x / np.sqrt(2)))
+        else:
+            return (
+                1.0 / 2.0 *
+                (1 + np.array([math.erf(n / np.sqrt(2)) for n in x]))
+            )
 
 
 class AsianOption(Option):

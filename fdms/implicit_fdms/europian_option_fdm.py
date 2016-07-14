@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from ..core import FDMBase
+
+from ..core import FDMBaseEuropian
 
 
-class EuropianOptionImplicitFDM(FDMBase):
+class EuropianOptionImplicitFDM(FDMBaseEuropian):
     """
     Implicit Euler scheme realization for Black-Scholes PDE
     for vanilla europian option
     """
-    def __init__(self, option, market, nodes):
-        super(EuropianOptionImplicitFDM, self).__init__(option, market, nodes)
-        self.dt = self.nodes.time_nodes[1] - self.nodes.time_nodes[0]
-
     @property
     def _coefficients(self):
         j_points = np.arange(1, len(self.nodes.asset_price_nodes) - 1)

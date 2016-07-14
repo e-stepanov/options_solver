@@ -3,15 +3,16 @@
 Calculate options' prices.
 
 Example command for calculating europian option:
-python calculate.py -t europian -tm implicit -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
+python calculate.py -t europian -mt implicit -s 150.0 -m 1.0 -i 0.05 \
+ -v 0.01 -smax 350.0
 
 Example command for calculating asian option:
-python calculate.py -t asian -tm explicit -s 150.0 -m 1.0 -i 0.05 -v 0.01 -smax 350.0
+python calculate.py -t asian -tm explicit -s 150.0 -m 1.0 -i 0.05 \
+ -v 0.01 -smax 350.0
 -amax 200.0
 
 """
 import time
-import argparse
 
 from market import (
     MarketData,
@@ -24,57 +25,11 @@ from fdms.explicit_fdms import (
     AsianOptionExplicitFDM
 )
 from fdms.implicit_fdms import EuropianOptionImplicitFDM
+from argument_parser import OptionsSolverArgumentParser
 
-parser = argparse.ArgumentParser(description="Calculates options prices")
-parser.add_argument(
-    '--type', '-t', choices=['europian', 'asian'],
-    required=True, help="Option type"
-)
-parser.add_argument(
-    '--fdm_type', '-mt', choices=['explicit', 'implicit'],
-    required=True, help="Finite difference method type"
-)
-parser.add_argument(
-    '--strike', '-s',
-    type=float, required=True,
-    help="Strike price"
-)
-parser.add_argument(
-    '--maturity', '-m',
-    type=float, default=1.0,
-    help="Maturity (in years)"
-)
-parser.add_argument(
-    '--interest', '-i',
-    type=float, required=True,
-    help="Interest rate"
-)
-parser.add_argument(
-    '--volatility', '-v',
-    type=float, required=True,
-    help="Volatility"
-)
-parser.add_argument(
-    '--asset_price_max', '-smax',
-    type=float, required=True,
-    help="Asset price maximum value"
-)
-parser.add_argument(
-    '--average_price_max', '-amax', type=float,
-    help="Average price maximum value (for asian options only)"
-)
-parser.add_argument(
-    '--asset_price_min', '-smin',
-    type=float, default=0.0,
-    help="Asset price minimum value"
-)
-parser.add_argument(
-    '--average_price_min', '-amin',
-    type=float, default=0.0,
-    help="Average price minimum value (for asian options only)"
-)
 
 if __name__ == "__main__":
+    parser = OptionsSolverArgumentParser.get_parser()
     args = parser.parse_args()
 
     market_data = MarketData(
@@ -91,9 +46,9 @@ if __name__ == "__main__":
             strike=args.strike, maturity=args.maturity
         )
         nodes = Nodes([
-            ([0.0, args.maturity], 1000, 'time'),
+            ([0.0, args.maturity], 1225, 'time'),
             ([args.asset_price_min, args.asset_price_max],
-             100, 'asset_price')
+             3500, 'asset_price')
         ])
 
         fdm = fdm_class(
@@ -103,7 +58,9 @@ if __name__ == "__main__":
         prices = fdm.calculate_prices()
         end_time = time.time()
         print "Executing time %f" % (end_time - start_time)
-        print prices[-1]
+
+        fdm.compare_with_analytical(show_plot=True)
+
     elif args.type == 'asian':
         start_time = time.time()
         option = AsianOption(

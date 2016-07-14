@@ -3,26 +3,15 @@
 import math
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
 
-from ..core import FDMBase
+from ..core import FDMBaseEuropian
 
 
-class EuropianOptionExplicitFDM(FDMBase):
+class EuropianOptionExplicitFDM(FDMBaseEuropian):
     """
     Explicit Euler scheme realization for Black-Scholes PDE
     for vanilla europian option
     """
-
-    def __init__(self, option, market, nodes):
-        super(EuropianOptionExplicitFDM, self).__init__(
-            option, market, nodes
-        )
-        self.dt = self.nodes.time_nodes[1] - self.nodes.time_nodes[0]
-        # self.dt = self.option.maturity / len(self.nodes.time_nodes)
-
     def get_fdm_coefficients(self):
         """
         C_j^{n+1} = alpha * C_{j-1}^n + beta * C_j^n + gamma * C_{j+1}^n
@@ -74,19 +63,3 @@ class EuropianOptionExplicitFDM(FDMBase):
 
         self.option_prices = C
         return self.option_prices
-
-    def plot_option_prices(self, time_sparse=1, asset_price_sparse=1):
-        """
-        Plot option prices with respect to time and initial asset price
-        """
-        asset_prices_grid, time_grid = self.nodes.mesh_grid(
-            time_sparse, asset_price_sparse
-        )
-        figure = plt.figure()
-        axes = Axes3D(figure)
-        axes.plot_surface(
-            time_grid, asset_prices_grid,
-            self.option_prices[::time_sparse, ::asset_price_sparse],
-            rstride=1, cstride=1, cmap=cm.YlGnBu_r
-        )
-        plt.show()
