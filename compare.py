@@ -31,6 +31,7 @@ from fdms.explicit_fdms import (
 )
 from fdms.implicit_fdms import EuropianOptionImplicitFDM
 from argument_parser import OptionsSolverArgumentParser
+from utils import add_beautiful_subplot
 
 
 if __name__ == "__main__":
@@ -46,7 +47,7 @@ if __name__ == "__main__":
             strike=args.strike, maturity=args.maturity
         )
         nodes = Nodes([
-            ([0.0, args.maturity], 800, 'time'),
+            ([0.0, args.maturity], 1190, 'time'),
             ([args.asset_price_min, args.asset_price_max],
              3500, 'asset_price')
         ])
@@ -82,20 +83,34 @@ if __name__ == "__main__":
                 fdm_class.__name__, max_errors[fdm_class.__name__]
             ))
 
-        plt.figure(1)
-        plt.subplot(311)
-        plt.plot(
-            nodes.asset_price_nodes, prices_analytical
-        )
-        plt.subplot(312)
-        plt.plot(
-            nodes.asset_price_nodes,
+        fig = plt.figure(1)
+
+        explicit_diff = (
+            prices_analytical -
             prices_numerical[EuropianOptionExplicitFDM.__name__]
         )
-        plt.subplot(313)
+
+        ymin = np.min(explicit_diff)
+        ymax = np.max(explicit_diff)
+        xlim = [args.asset_price_min - 3, args.asset_price_max]
+        ylim = [ymin - 0.01 * (ymax - ymin), ymax + 0.01 * (ymax - ymin)]
+        add_beautiful_subplot(fig, 211, xlim, ylim)
         plt.plot(
-            nodes.asset_price_nodes,
+            nodes.asset_price_nodes, explicit_diff
+        )
+
+        implicit_diff = (
+            prices_analytical -
             prices_numerical[EuropianOptionImplicitFDM.__name__]
+        )
+
+        ymin = np.min(implicit_diff)
+        ymax = np.max(implicit_diff)
+        xlim = [args.asset_price_min - 3, args.asset_price_max]
+        ylim = [ymin - 0.01 * (ymax - ymin), ymax + 0.01 * (ymax - ymin)]
+        add_beautiful_subplot(fig, 212, xlim, ylim)
+        plt.plot(
+            nodes.asset_price_nodes, implicit_diff
         )
         plt.show()
 
