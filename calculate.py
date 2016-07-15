@@ -91,8 +91,8 @@ if __name__ == "__main__":
 
         prices = fdm.calculate_prices()
         end_time = time.time()
-        print "Executing time %f" % (end_time - start_time)
-        print prices[-1]
+        print("Executing time %f" % (end_time - start_time))
+        print(prices[-1])
     elif args.type == 'asian':
         start_time = time.time()
         option = AsianOption(
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
         prices = fdm.calculate_prices()
         end_time = time.time()
-        print "Executing time %f" % (end_time - start_time)
-        print prices[-1]
+        print("Executing time %f" % (end_time - start_time))
+        print(prices[-1])
     else:
         raise ValueError("Only europian options are supported at this moment")

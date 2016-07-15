@@ -1,2 +1,2 @@
-from asian_option_fdm import AsianOptionExplicitFDM
-from europian_option_fdm import EuropianOptionExplicitFDM
+from .asian_option_fdm import AsianOptionExplicitFDM
+from .europian_option_fdm import EuropianOptionExplicitFDM

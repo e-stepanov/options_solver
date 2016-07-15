@@ -144,7 +144,7 @@ class AsianOptionExplicitFDM(FDMBase):
 
     def calculate_prices(self):
         start = time.time()
-        print "Begin: %s" % str(time.time() - start)
+        print("Begin: %s" % str(time.time() - start))
 
         coeffs_center = self.get_coeffs_center()
         coeffs_right = self.get_coeffs_right()
@@ -152,7 +152,7 @@ class AsianOptionExplicitFDM(FDMBase):
         coeffs_front = self.get_coeffs_front()
         coeffs_back = self.get_coeffs_back()
 
-        print (
+        print(
             "Coeffs were counted succesfully: %s" %
             str(time.time() - start)
         )
@@ -163,7 +163,7 @@ class AsianOptionExplicitFDM(FDMBase):
         for time_node in self.nodes.time_nodes[1:]:
             # every 100th iteration print time info
             if not int(time_node * self._t_number) % 100:
-                print (
+                print(
                     "tau = %s. Time elapsed: %s" %
                     (time_node, str(time.time() - start))
                 )
