@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 # -*- coding: utf-8 -*-
 """
 Calculate options' prices.
@@ -13,6 +15,9 @@ python calculate.py -t asian -tm explicit -s 150.0 -m 1.0 -i 0.05 \
 
 """
 import time
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 from market import (
     MarketData,
@@ -37,28 +42,62 @@ if __name__ == "__main__":
     )
 
     if args.type == 'europian':
-        if args.fdm_type == 'explicit':
-            fdm_class = EuropianOptionExplicitFDM
-        elif args.fdm_type == 'implicit':
-            fdm_class = EuropianOptionImplicitFDM
-        start_time = time.time()
         option = EuropianOption(
             strike=args.strike, maturity=args.maturity
         )
         nodes = Nodes([
-            ([0.0, args.maturity], 100, 'time'),
+            ([0.0, args.maturity], 800, 'time'),
             ([args.asset_price_min, args.asset_price_max],
-             1000, 'asset_price')
+             3500, 'asset_price')
         ])
-
-        fdm = fdm_class(
-            option, market_data, nodes
+        prices_analytical = option.calculate_price(
+            nodes.asset_price_nodes, market_data
         )
 
-        prices = fdm.calculate_prices()
-        end_time = time.time()
+        prices_numerical = {}
+        max_errors = {}
+        for fdm_class in [
+            EuropianOptionExplicitFDM, EuropianOptionImplicitFDM
+        ]:
+            start_time = time.time()
 
-        print("Executing time %f" % (end_time - start_time))
+            fdm = fdm_class(
+                option, market_data, nodes
+            )
+
+            prices_numerical[fdm_class.__name__] = (
+                fdm.calculate_prices()[-1][:]
+            )
+            end_time = time.time()
+
+            print("Executing time for %s %f" % (
+                fdm_class.__name__, (end_time - start_time)
+            ))
+            max_errors[fdm_class.__name__] = np.max(
+                np.abs(
+                    prices_analytical - prices_numerical[fdm_class.__name__]
+                )
+            )
+            print("Max error for %s: %f" % (
+                fdm_class.__name__, max_errors[fdm_class.__name__]
+            ))
+
+        plt.figure(1)
+        plt.subplot(311)
+        plt.plot(
+            nodes.asset_price_nodes, prices_analytical
+        )
+        plt.subplot(312)
+        plt.plot(
+            nodes.asset_price_nodes,
+            prices_numerical[EuropianOptionExplicitFDM.__name__]
+        )
+        plt.subplot(313)
+        plt.plot(
+            nodes.asset_price_nodes,
+            prices_numerical[EuropianOptionImplicitFDM.__name__]
+        )
+        plt.show()
 
     elif args.type == 'asian':
         start_time = time.time()

@@ -28,6 +28,7 @@ class EuropianOption(Option):
         return np.maximum(asset_price - self.strike, 0)
 
     def calculate_price(self, asset_price, market_data):
+        print(self.strike)
         d1 = (
             (np.log(asset_price / self.strike) +
                 (market_data.interest +
