@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+""" Parser for console input arguments """
 import argparse
 
 

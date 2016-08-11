@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+""" Base classes for finite difference schemes realizations """
 
 import numpy as np
 import matplotlib.pyplot as plt

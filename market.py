@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+""" Market instances"""
+
 import math
 
 import numpy as np

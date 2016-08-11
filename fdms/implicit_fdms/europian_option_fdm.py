@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+""" Implicit finite difference scheme for europian options """
+
 import numpy as np
 
 from ..core import FDMBaseEuropian

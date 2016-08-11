@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+""" Explicit finite difference scheme for europian options """
 
 import math
 
