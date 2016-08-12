@@ -45,10 +45,12 @@ if __name__ == "__main__":
         option = EuropianOption(
             strike=args.strike, maturity=args.maturity
         )
+        N_t = 1225
+        N_S = 3500
         nodes = Nodes([
-            ([0.0, args.maturity], 100, 'time'),
+            ([0.0, args.maturity], N_t, 'time'),
             ([args.asset_price_min, args.asset_price_max],
-             1000, 'asset_price')
+             N_S, 'asset_price')
         ])
 
         fdm = fdm_class(
@@ -57,6 +59,11 @@ if __name__ == "__main__":
 
         prices = fdm.calculate_prices()
         end_time = time.time()
+
+        fdm.export_to_file(
+            "europian %d %d.data.xlsx" % (N_t, N_S), points_number=100
+        )
+        fdm.compare_with_analytical()
 
         print("Executing time %f" % (end_time - start_time))
 

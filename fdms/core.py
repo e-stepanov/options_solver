@@ -2,6 +2,7 @@
 """ Base classes for finite difference schemes realizations """
 
 import numpy as np
+import xlsxwriter
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
@@ -21,6 +22,9 @@ class FDMBase(object):
         raise NotImplementedError
 
     def plot_option_prices(self, sparse_coordinates):
+        raise NotImplementedError
+
+    def export_to_file(self):
         raise NotImplementedError
 
 
@@ -51,6 +55,65 @@ class FDMBaseEuropian(FDMBase):
             rstride=1, cstride=1, cmap=cm.YlGnBu_r
         )
         plt.show()
+
+    def export_to_file(self, filename, points_number=None):
+        """
+        Export solution's data to file
+        """
+
+        prices_analytical = self.option.calculate_price(
+            self.nodes.asset_price_nodes, self.market
+        )
+        prices_numerical = self.option_prices[-1][:]
+
+        if not points_number:
+            nodes_numbers = np.arange(len(self.nodes.asset_price_nodes))
+        else:
+            nodes_numbers = np.linspace(
+                0, len(self.nodes.asset_price_nodes) - 1, points_number,
+                dtype='int'
+            )
+            # ensure that index of max difference in nodes_numbers
+            diff_abs = np.abs(prices_analytical - prices_numerical)
+            diff_argmax = np.argmax(diff_abs)
+            index_to_replace = np.argmin(
+                np.abs(nodes_numbers - diff_argmax)
+            )
+            nodes_numbers[index_to_replace] = diff_argmax
+
+        export_data = (
+            [
+                self.nodes.asset_price_nodes[i],
+                prices_analytical[i],
+                prices_numerical[i]
+            ] for i in nodes_numbers
+        )
+
+        workbook = xlsxwriter.Workbook(filename)
+        worksheet = workbook.add_worksheet()
+        num_format = workbook.add_format()
+        num_format.set_num_format('0.00000')
+
+        worksheet.write_string(0, 0, "Asset price")
+        worksheet.write_string(0, 1, "Analytical price")
+        worksheet.write_string(0, 2, "Numerical price")
+        worksheet.write_string(0, 3, "Difference")
+
+        row_number = 1
+        for asset_price, analytical_price, num_price in export_data:
+            worksheet.write_number(
+                row_number, 0, asset_price, num_format
+            )
+            worksheet.write_number(
+                row_number, 1, analytical_price, num_format
+            )
+            worksheet.write_number(
+                row_number, 2, num_price, num_format
+            )
+            worksheet.write_number(
+                row_number, 3, (analytical_price - num_price), num_format
+            )
+            row_number += 1
 
     def compare_with_analytical(self, show_plot=False):
         """
