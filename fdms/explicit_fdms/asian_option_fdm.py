@@ -4,6 +4,9 @@
 import time
 
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
 
 from ..core import FDMBase
 
@@ -204,4 +207,25 @@ class AsianOptionExplicitFDM(FDMBase):
             )
             C_current = C_next.copy()
 
+        self.option_prices = C_current
+
         return C_current
+
+    def plot_option_prices(self, asset_price_sparse=1, average_price_sparse=1):
+        """
+        Plot option prices with respect to initial asset price and
+        average asset price
+        """
+        average_prices_grid, asset_prices_grid = np.meshgrid(
+            self.nodes.average_price_nodes[::average_price_sparse],
+            self.nodes.asset_price_nodes[::asset_price_sparse]
+        )
+        figure = plt.figure()
+        axes = Axes3D(figure)
+        axes.plot_surface(
+            asset_prices_grid, average_prices_grid,
+            self.option_prices[::asset_price_sparse,
+                               ::average_price_sparse],
+            rstride=1, cstride=1, cmap=cm.YlGnBu_r
+        )
+        plt.show()
