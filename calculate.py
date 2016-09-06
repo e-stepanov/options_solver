@@ -11,7 +11,9 @@ python calculate.py -t asian -mt explicit -s 150.0 -m 1.0 -i 0.05 \
  -v 0.01 -smax 350.0 -amax 200.0
 
 """
+import os
 import time
+import ConfigParser
 
 from market import (
     MarketData,
@@ -28,28 +30,41 @@ from argument_parser import OptionsSolverArgumentParser
 
 
 if __name__ == "__main__":
+    config = ConfigParser.RawConfigParser()
+    config.read('config.cfg')
+    results_path = config.get('other', 'results_path')
+
     parser = OptionsSolverArgumentParser.get_parser()
     args = parser.parse_args()
 
     market_data = MarketData(
-        interest=args.interest, volatility=args.volatility
+        interest=config.getfloat(args.type, 'interest_rate'),
+        volatility=config.getfloat(args.type, 'volatility')
     )
 
     if args.type == 'europian':
-        if args.fdm_type == 'explicit':
+        method_type = config.get(args.type, 'method_type')
+        strike = config.getfloat(args.type, 'strike_price')
+        maturity = config.getfloat(args.type, 'maturity')
+        time_steps_number = config.getint(args.type, 'time_steps_number')
+        asset_price_steps_number = config.getint(
+            args.type, 'asset_price_steps_number'
+        )
+        asset_price_min = config.getfloat(args.type, 'asset_price_min')
+        asset_price_max = config.getfloat(args.type, 'asset_price_max')
+
+        if method_type == 'explicit':
             fdm_class = EuropianOptionExplicitFDM
-        elif args.fdm_type == 'implicit':
+        elif method_type == 'implicit':
             fdm_class = EuropianOptionImplicitFDM
         start_time = time.time()
         option = EuropianOption(
-            strike=args.strike, maturity=args.maturity
+            strike=strike, maturity=maturity
         )
-        N_t = 1225
-        N_S = 3500
         nodes = Nodes([
-            ([0.0, args.maturity], N_t, 'time'),
-            ([args.asset_price_min, args.asset_price_max],
-             N_S, 'asset_price')
+            ([0.0, maturity], time_steps_number, 'time'),
+            ([asset_price_min, asset_price_max],
+             asset_price_steps_number, 'asset_price')
         ])
 
         fdm = fdm_class(
@@ -60,23 +75,43 @@ if __name__ == "__main__":
         end_time = time.time()
 
         fdm.export_to_file(
-            "europian %d %d.data.xlsx" % (N_t, N_S), points_number=100
+            os.path.join(
+                results_path,
+                "europian %d %d.data.xlsx" %
+                (time_steps_number, asset_price_steps_number),
+            ),
+            points_number=100
         )
         fdm.compare_with_analytical()
 
         print("Executing time %f" % (end_time - start_time))
 
     elif args.type == 'asian':
+        method_type = config.get(args.type, 'method_type')
+        strike = config.getfloat(args.type, 'strike_price')
+        maturity = config.getfloat(args.type, 'maturity')
+        time_steps_number = config.getint(args.type, 'time_steps_number')
+        asset_price_steps_number = config.getint(
+            args.type, 'asset_price_steps_number'
+        )
+        average_price_steps_number = config.getint(
+            args.type, 'average_price_steps_number'
+        )
+        asset_price_min = config.getfloat(args.type, 'asset_price_min')
+        asset_price_max = config.getfloat(args.type, 'asset_price_max')
+        average_price_min = config.getfloat(args.type, 'average_price_min')
+        average_price_max = config.getfloat(args.type, 'average_price_max')
+
         start_time = time.time()
         option = AsianOption(
-            strike=args.strike, maturity=args.maturity
+            strike=strike, maturity=maturity
         )
         nodes = Nodes([
-            ([0.0, args.maturity], 100000, 'time'),
-            ([args.asset_price_min, args.asset_price_max],
-             700, 'asset_price'),
-            ([args.average_price_min, args.average_price_max],
-             400, 'average_price')
+            ([0.0, maturity], time_steps_number, 'time'),
+            ([asset_price_min, asset_price_max],
+             asset_price_steps_number, 'asset_price'),
+            ([average_price_min, average_price_max],
+             average_price_steps_number, 'average_price')
         ])
 
         fdm = AsianOptionExplicitFDM(
@@ -86,7 +121,14 @@ if __name__ == "__main__":
         prices = fdm.calculate_prices()
         end_time = time.time()
         fdm.plot_option_prices(asset_price_sparse=35, average_price_sparse=20)
-        fdm.export_to_file("asian_data.xlsx")
+        fdm.export_to_file(
+            os.path.join(
+                results_path,
+                "asian_data %d %d %d.xlsx" %
+                (time_steps_number, asset_price_steps_number,
+                 average_price_steps_number)
+            )
+        )
         print("Executing time %f" % (end_time - start_time))
     else:
         raise ValueError(
