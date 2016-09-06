@@ -6,6 +6,11 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import xlsxwriter
+from openpyxl import (
+    Workbook,
+    load_workbook
+)
 from mpl_toolkits.mplot3d import Axes3D
 
 from ..core import FDMBase
@@ -127,20 +132,52 @@ class AsianOptionExplicitFDM(FDMBase):
             self.dS * self.dt / (2.0 * self.dA)
         )
 
-    def write_to_file(self, C, filename):
+    def export_to_file(self, filename):
         """ Write computed values to file """
-        f = open(filename, 'w')
-        for i in range(self._S_number):
-            for j in range(self._A_number):
-                f.write("%s %s %s\n" % (
-                    self._S_nodes[i], self._A_nodes[j], C[i, j]
-                ))
+        zero_volatility_solution = self.get_zero_volatility_solution()
+
+        export_data = (
+            [
+                self._S_nodes[i],
+                self._A_nodes[j],
+                self.option_prices[i, j],
+                zero_volatility_solution[i, j]
+            ] for i in range(self._S_number) for j in range(self._A_number)
+        )
+
+        wb = Workbook()
+        ws = wb.active
+
+        ws['A1'] = 'Asset price'
+        ws['B1'] = 'Average price'
+        ws['C1'] = 'Numerical price'
+        ws['D1'] = 'Zero volatility price'
+        ws['E1'] = 'Difference'
+
+        row = 2
+        for (
+            asset_price, average_price,
+            numerical_price, zero_volatility_price
+        ) in export_data:
+            ws.cell(row=row, column=1).value = asset_price
+            ws.cell(row=row, column=2).value = average_price
+            ws.cell(row=row, column=3).value = numerical_price
+            ws.cell(row=row, column=4).value = zero_volatility_price
+            ws.cell(row=row, column=5).value = (
+                numerical_price - zero_volatility_price
+            )
+            row += 1
+
+        wb.save(filename)
+
+    def import_from_file(self, filename):
+        pass
 
     def get_zero_volatility_solution(self):
         """ Return precise solution for zero volatility at tau = T """
         A_grid, S_grid = np.meshgrid(self._A_nodes, self._S_nodes)
         return np.maximum(
-            (A_grid / self.option.maturity - self.option.strike_price) *
+            (A_grid / self.option.maturity - self.option.strike) *
             np.exp(-self.market.interest * self.option.maturity) +
             S_grid / (self.market.interest * self.option.maturity) *
             (1 - np.exp(-self.market.interest * self.option.maturity)), 0
