@@ -3,12 +3,10 @@
 Calculate options' prices.
 
 Example command for calculating europian option:
-python calculate.py -t europian -mt implicit -s 150.0 -m 1.0 -i 0.05 \
- -v 0.01 -smax 350.0
+python calculate.py -t europian
 
 Example command for calculating asian option:
-python calculate.py -t asian -mt explicit -s 150.0 -m 1.0 -i 0.05 \
- -v 0.01 -smax 350.0 -amax 200.0
+python calculate.py -t asian
 
 """
 import os
