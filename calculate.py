@@ -7,7 +7,7 @@ python calculate.py -t europian -mt implicit -s 150.0 -m 1.0 -i 0.05 \
  -v 0.01 -smax 350.0
 
 Example command for calculating asian option:
-python calculate.py -t asian -tm explicit -s 150.0 -m 1.0 -i 0.05 \
+python calculate.py -t asian -mt explicit -s 150.0 -m 1.0 -i 0.05 \
  -v 0.01 -smax 350.0 -amax 200.0
 
 """
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             strike=args.strike, maturity=args.maturity
         )
         nodes = Nodes([
-            ([0.0, args.maturity], 100000, 'time'),
+            ([0.0, args.maturity], 1000, 'time'),
             ([args.asset_price_min, args.asset_price_max],
              700, 'asset_price'),
             ([args.average_price_min, args.average_price_max],
@@ -86,6 +86,7 @@ if __name__ == "__main__":
         prices = fdm.calculate_prices()
         end_time = time.time()
         fdm.plot_option_prices(asset_price_sparse=35, average_price_sparse=20)
+        fdm.export_to_file("asian_data.xlsx")
         print("Executing time %f" % (end_time - start_time))
     else:
         raise ValueError(
