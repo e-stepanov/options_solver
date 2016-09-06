@@ -72,7 +72,7 @@ if __name__ == "__main__":
             strike=args.strike, maturity=args.maturity
         )
         nodes = Nodes([
-            ([0.0, args.maturity], 1000, 'time'),
+            ([0.0, args.maturity], 100000, 'time'),
             ([args.asset_price_min, args.asset_price_max],
              700, 'asset_price'),
             ([args.average_price_min, args.average_price_max],

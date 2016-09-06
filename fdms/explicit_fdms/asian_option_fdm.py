@@ -6,7 +6,6 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-import xlsxwriter
 from openpyxl import (
     Workbook,
     load_workbook
@@ -170,8 +169,45 @@ class AsianOptionExplicitFDM(FDMBase):
 
         wb.save(filename)
 
-    def import_from_file(self, filename):
-        pass
+    @staticmethod
+    def plot_difference_from_file(filename):
+        wb = load_workbook(filename)
+        ws = wb.active
+        asset_prices = [0] * (ws.max_row - 1)
+        average_prices = [0] * (ws.max_row - 1)
+        differences = [0] * (ws.max_row - 1)
+
+        index = 0
+        for row in ws.iter_rows('A2:E%d' % ws.max_row):
+            asset_prices[index] = row[0].value
+            average_prices[index] = row[1].value
+            differences[index] = row[4].value
+            index += 1
+
+        asset_prices = np.array(
+            sorted(list(set(asset_prices)))
+        )
+        average_prices = np.array(
+            sorted(list(set(average_prices)))
+        )
+
+        average_prices_grid, asset_prices_grid = np.meshgrid(
+            average_prices, asset_prices
+        )
+        print len(differences)
+        differences_grid = np.array(differences).reshape(
+            asset_prices_grid.shape
+        )
+
+        figure = plt.figure()
+        axes = Axes3D(figure)
+        axes.plot_surface(
+            asset_prices_grid,
+            average_prices_grid,
+            differences_grid,
+            rstride=1, cstride=1, cmap=cm.YlGnBu_r
+        )
+        plt.show()
 
     def get_zero_volatility_solution(self):
         """ Return precise solution for zero volatility at tau = T """
