@@ -2,7 +2,7 @@
 """ Base classes for finite difference schemes realizations """
 
 import numpy as np
-import xlsxwriter
+from openpyxl import Workbook
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
@@ -89,31 +89,23 @@ class FDMBaseEuropian(FDMBase):
             ] for i in nodes_numbers
         )
 
-        workbook = xlsxwriter.Workbook(filename)
-        worksheet = workbook.add_worksheet()
-        num_format = workbook.add_format()
-        num_format.set_num_format('0.00000')
+        wb = Workbook()
+        ws = wb.active
 
-        worksheet.write_string(0, 0, "Asset price")
-        worksheet.write_string(0, 1, "Analytical price")
-        worksheet.write_string(0, 2, "Numerical price")
-        worksheet.write_string(0, 3, "Difference")
+        ws['A1'] = 'Asset price'
+        ws['B1'] = 'Analitycal price'
+        ws['C1'] = 'Numerical price'
+        ws['D1'] = 'Difference'
 
-        row_number = 1
+        row = 2
         for asset_price, analytical_price, num_price in export_data:
-            worksheet.write_number(
-                row_number, 0, asset_price, num_format
-            )
-            worksheet.write_number(
-                row_number, 1, analytical_price, num_format
-            )
-            worksheet.write_number(
-                row_number, 2, num_price, num_format
-            )
-            worksheet.write_number(
-                row_number, 3, (analytical_price - num_price), num_format
-            )
-            row_number += 1
+            ws.cell(row=row, column=1).value = asset_price
+            ws.cell(row=row, column=2).value = analytical_price
+            ws.cell(row=row, column=3).value = num_price
+            ws.cell(row=row, column=4).value = analytical_price - num_price
+            row += 1
+
+        wb.save(filename)
 
     def compare_with_analytical(self, show_plot=False):
         """
